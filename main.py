@@ -1,13 +1,16 @@
 #---------------------------------------Class-----------------------------------------
 class Automata:
     #Variables locales
-    nEstados=0
-    estados = []
-    nFinales = 0
-    estadosFinales = []
-    nCaracteres = 0
-    caracteres = []
-    tabla = []
+    nEstados=0              #Número de estados que tiene el autómata
+    estados = []            #Lista de estados del autómata
+    nFinales = 0            #Número de estados finales
+    estadosFinales = []     #Lista de estados finales
+    nCaracteres = 0         #Número de caracateres contenidos en el alfabeto
+    caracteres = []         #Lista correspondiente al alfabeto del automata
+    tabla = []              #Tabla de transiciones
+
+    estadoActual = []       #Estado o estados en los que se encuentra el autómata
+
 
     def show_info(self):                #Muestrar la información del automata leido
         print(self.nEstados)
@@ -19,6 +22,36 @@ class Automata:
         print("Tabla de Transiciones:")
         for i in range(int(self.nEstados)):
             print(self.tabla[i])
+
+    def next_state(self,char):          #Función que dado un caractar nos devuelve el estado siguiente del automata
+        indexState = self.estados.index(self.estadoActual)  #Obtención del valor del indice del estado actual
+        indexChar = self.caracteres.index(char)             #Obtención del valor del indice del caracter que se esta procesando
+
+        nE = self.tabla[indexState][indexChar]   #Obtengo el siguiente valor dado
+        nE = nE.split(" ")
+        aux = []
+        for index in nE:
+            if index != '':
+               aux.append(index)
+
+        self.estadoActual = aux             #todo: trabajar con diferentes estados a la vez
+
+
+
+
+    def process_word(self, word):       #Funcón que procesa la palabra que entra en el autómata
+        self.estadoActual = self.estados[0]
+        print(self.estadoActual, end=", ")
+        for x in word:
+            if not self.caracteres.__contains__(x):     #Si alguno de los caracteres no pertenece al alfabeto se lanza un mensaje de error
+                print("Alguno de los caracteres no pertenece al Alfabeto")
+                break
+            else:
+                self.next_state(x)
+                print(self.estadoActual, end=", ")
+
+
+
 #------------------------------------Fin Class-------------------------------------------
 
 
@@ -68,12 +101,13 @@ while(True):
     print("______________________________________")
     print("| IMPLEMENTADOR DE AUTOMATAS FINITOS |")
     print("______________________________________")
-    word = input("Palabra a procesar (o 'q' para salir): ")
+    word = input("Palabra a procesar (o 'q' para salir): ")     #Palabra de prueba: 152ac22bd1c2c
 
     automata = Automata()  # Instacia de la clase autómata
 
-    if word == "QUIT":
+    if word == "q":
         break
     else:
         read_file(automata)
-        automata.show_info()
+        #automata.show_info()
+        automata.process_word(word)
