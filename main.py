@@ -10,7 +10,7 @@ class Automata:
     tabla = []              #Tabla de transiciones
 
     estadoActual = []       #Estado o estados en los que se encuentra el autómata
-
+    aux = []
 
     def show_info(self):                #Muestrar la información del automata leido
         print(self.nEstados)
@@ -23,26 +23,68 @@ class Automata:
         for i in range(int(self.nEstados)):
             print(self.tabla[i])
 
+
+    def process_empty_word(self,estado):           #Procesamiento de la cadena vacía
+        index = self.estados.index(estado)         #Obtengo la fila en la que se encuentra el estado
+        if self.tabla[index][-1] != ' ':           #Si se llega a traves de la cadena vacía a un estado:
+            self.aux.append(self.estadoActual)
+            for i in self.tabla[index][-1]:
+                if i != ' ':
+                    self.aux.append(i)
+                    self.process_empty_word(i)
+
+            aux2 = []
+
+            for ind in self.aux:
+                aux2.append(ind)
+
+            self.estadoActual = aux2
+
+            return 1
+        else:
+            return 0
+
+    def process_several_states(self,char):
+        aux = []
+        for i in self.estadoActual:  # Hay que valorar todos los posibles estados actuales en los que nos encontramos
+            indexState = self.estados.index(i)  # Obtención del valor del indice del estado actual
+
+            if(self.process_empty_word(i)):
+                self.aux.clear()
+                delete_repetitions(self.estadoActual)
+
+            indexChar = self.caracteres.index(char)  # Obtención del valor del indice del caracter que se esta procesando
+
+            nE = self.tabla[indexState][indexChar]  # Obtengo el siguiente valor dado
+            nE = nE.split(" ")
+
+            for index in nE:
+                if index != '':
+                    aux.append(index)
+        self.estadoActual = aux
+
     def next_state(self,char,mark):          #Función que dado un caractar nos devuelve el estado siguiente del automata
-        if(self.estadoActual.__contains__(" ")):
-            for i in self.estadoActual:                             #Hay que valorar todos los posibles estados actuales en los que nos encontramos
-
-                indexState = self.estados.index(i)              #Obtención del valor del indice del estado actual
-                indexChar = self.caracteres.index(char)         #Obtención del valor del indice del caracter que se esta procesando
-
-                nE = self.tabla[indexState][indexChar]          #Obtengo el siguiente valor dado
-                nE = nE.split(" ")
-                aux = []
-                for index in nE:
-                    if index != '':
-                        aux.append(index)
-
-            self.estadoActual = aux
+        if (mark>0 and len(self.estadoActual)>1):
+            self.process_several_states(char)
         else:
             if mark == 0:
-                indexState = self.estados.index(self.estadoActual)  # Obtención del valor del indice del estado actual
+                if (self.process_empty_word(self.estadoActual)):
+                    self.aux.clear()
+                    delete_repetitions(self.estadoActual)
+
+                    self.process_several_states(char)
+                    return
+                else:
+                    indexState = self.estados.index(self.estadoActual)  # Obtención del valor del indice del estado actual
             else:
-                indexState = self.estados.index(self.estadoActual[0])  # Obtención del valor del indice del estado actual
+                if(self.process_empty_word(self.estadoActual[0])):
+                    self.aux.clear()
+                    delete_repetitions(self.estadoActual)
+
+                    self.process_several_states(char)
+                    return
+                else:
+                    indexState = self.estados.index(self.estadoActual[0])  # Obtención del valor del indice del estado actual
 
             indexChar = self.caracteres.index(char)                # Obtención del valor del indice del caracter que se esta procesando
 
@@ -73,11 +115,10 @@ class Automata:
 
 #------------------------------------Fin Class-------------------------------------------
 
-
-
+#----------------------------------------------Funciones------------------------------------
 # Función encargada de leer el fichero y guardar las casteristicas del autómata
-def read_file(Automata):
-    fichero = open('definicionAutomata2.txt',"r")    #Apertura del fichero con la descripción del autómata
+def read_file(Automata,file):
+    fichero = open(file,"r")    #Apertura del fichero con la descripción del autómata
     lines = fichero.readlines()                 #Guardo las líneas del fichero en la variables lines
 
     aux = 0                                     #Variable para saber en que linea estoy leyendo
@@ -112,7 +153,9 @@ def read_file(Automata):
                 del x[-1]                           #elimino el ultimo caracter ""
                 automata.tabla.append(x)            #añado el elemento a la tabla
 
-#----------------------------------------------Fin read_file----------------------------------------------------
+def delete_repetitions(list):
+    pass
+#----------------------------------------------Fin funciones----------------------------------------------------
 
 # -------------------------------------------------Main---------------------------------------------------------
 while(True):
@@ -127,7 +170,7 @@ while(True):
     if word == "q":
         break
     else:
-        read_file(automata)
-        automata.show_info()           #Descomentar si se quiere ver la información del automata definido en el fichero
+        read_file(automata,"definicionAutomata3.txt")
+        #automata.show_info()           #Descomentar si se quiere ver la información del automata definido en el fichero
         automata.process_word(word)
         automata.reset()
