@@ -10,7 +10,7 @@ class Automata:
     tabla = []              #Tabla de transiciones
 
     estadoActual = []       #Estado o estados en los que se encuentra el autómata
-    aux = []
+    aux = []                #Variable auxiliar para volcar valores de estados de forma temporal
 
     def show_info(self):                #Muestrar la información del automata leido
         print(self.nEstados)
@@ -22,7 +22,6 @@ class Automata:
         print("Tabla de Transiciones:")
         for i in range(int(self.nEstados)):
             print(self.tabla[i])
-
 
     def process_empty_word(self,estado):           #Procesamiento de la cadena vacía
         index = self.estados.index(estado)         #Obtengo la fila en la que se encuentra el estado
@@ -38,21 +37,24 @@ class Automata:
             for ind in self.aux:
                 aux2.append(ind)
 
-            self.estadoActual = aux2
-
+            flatEstates = []                #Convertir la lista de listas en una lista
+            for elem in aux2:
+                flatEstates.extend(elem)
+            self.estadoActual = flatEstates
             return 1
         else:
             return 0
 
     def process_several_states(self,char):
         aux = []
+
+        for i in self.estadoActual:
+            if (self.process_empty_word(i)):
+                self.aux.clear()
+                self.estadoActual = list(set(self.estadoActual))  # Eliminación de las repeticiones
+
         for i in self.estadoActual:  # Hay que valorar todos los posibles estados actuales en los que nos encontramos
             indexState = self.estados.index(i)  # Obtención del valor del indice del estado actual
-
-            if(self.process_empty_word(i)):
-                self.aux.clear()
-                delete_repetitions(self.estadoActual)
-
             indexChar = self.caracteres.index(char)  # Obtención del valor del indice del caracter que se esta procesando
 
             nE = self.tabla[indexState][indexChar]  # Obtengo el siguiente valor dado
@@ -70,7 +72,7 @@ class Automata:
             if mark == 0:
                 if (self.process_empty_word(self.estadoActual)):
                     self.aux.clear()
-                    delete_repetitions(self.estadoActual)
+                    self.estadoActual = list(set(self.estadoActual))
 
                     self.process_several_states(char)
                     return
@@ -79,7 +81,7 @@ class Automata:
             else:
                 if(self.process_empty_word(self.estadoActual[0])):
                     self.aux.clear()
-                    delete_repetitions(self.estadoActual)
+                    self.estadoActual = list(set(self.estadoActual))
 
                     self.process_several_states(char)
                     return
@@ -108,6 +110,11 @@ class Automata:
             else:
                 self.next_state(x,mark)
                 mark+=1
+                for i in self.estadoActual:     #Vuelvo a analizar los estados en los que me encuentro con la cadena vacía
+                    if (self.process_empty_word(i)):
+                        self.aux.clear()
+                        self.estadoActual = list(set(self.estadoActual))  # Eliminación de las repeticiones
+                self.estadoActual.sort()                                  # Ordeno por orden alfabético
                 print(self.estadoActual, end=", ")
 
     def reset(self):
@@ -153,8 +160,6 @@ def read_file(Automata,file):
                 del x[-1]                           #elimino el ultimo caracter ""
                 automata.tabla.append(x)            #añado el elemento a la tabla
 
-def delete_repetitions(list):
-    pass
 #----------------------------------------------Fin funciones----------------------------------------------------
 
 # -------------------------------------------------Main---------------------------------------------------------
@@ -170,7 +175,7 @@ while(True):
     if word == "q":
         break
     else:
-        read_file(automata,"definicionAutomata3.txt")
+        read_file(automata,"definicionAutomata4.txt")
         #automata.show_info()           #Descomentar si se quiere ver la información del automata definido en el fichero
         automata.process_word(word)
-        automata.reset()
+        automata.reset()                #Reseteo el estado actual al inicial
